@@ -2,13 +2,16 @@ pipeline {
     agent any
 
     tools {
-        // These must match names in Jenkins > Manage Jenkins > Global Tool Configuration
-        jdk 'jdk17'          // or 'jdk11', depending on what you installed
-        maven 'maven3'       // name of your Maven installation in Jenkins
+        jdk 'jdk17'          // Make sure you have this configured in Jenkins
+        maven 'maven3'       // Same for Maven (Manage Jenkins → Global Tool Configuration)
+    }
+
+    environment {
+        APP_NAME = 'news-app'
     }
 
     triggers {
-        // Automatically trigger build when pushing to GitHub (optional)
+        // Automatically builds when you push to GitHub (requires webhook)
         githubPush()
     }
 
@@ -22,7 +25,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building Maven project...'
+                echo 'Building project with Maven...'
                 sh 'mvn clean compile'
             }
         }
@@ -34,8 +37,33 @@ pipeline {
             }
             post {
                 always {
-                    echo 'Publishing test results...'
+                    // Publishes test results to Jenkins UI
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging the application...'
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                echo 'Archiving build artifacts...'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Build succeeded for ${APP_NAME}"
+        }
+        failure {
+            echo "❌ Build failed for ${APP_NAME}"
+        }
+    }
+}
