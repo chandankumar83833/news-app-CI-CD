@@ -13,7 +13,7 @@ public class TestController {
 	@GetMapping("")
 	public String test() {
 		
-		return "App Testing chandan";
+		return "App Testing ";
 		
 	}
 
