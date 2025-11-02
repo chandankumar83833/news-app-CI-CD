@@ -12,7 +12,7 @@ public class TestController {
 	
 	@GetMapping("")
 	public String test() {
-		
+		System.out.println("to print in console");
 		return "App Testing ";
 		
 	}
